@@ -1,0 +1,77 @@
+\documentclass[sigconf,nonacm]{acmart}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{Bib\TeX}}}
+
+\setcopyright{none}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{}
+
+\title{NLP Project 1.2: Sentiment Analysis of Financial News}
+
+\author{Hatice Kubra Aksu}
+\affiliation{%
+  \institution{TU Berlin}
+  \city{Berlin}
+  \country{Germany}}
+\email{kubra.aksu.hatice@gmail.com}
+
+\author{Ray}
+\affiliation{%
+  \institution{TU Berlin}
+  \city{Berlin}
+  \country{Germany}}
+\email{ray@example.com}
+
+\begin{document}
+
+\begin{abstract}
+Sentiment analysis on financial news headlines using classical ML, PMI-based
+word similarity, and fine-tuned transformers on Financial PhraseBank
+(\texttt{Sentences\_50Agree.txt}).
+\end{abstract}
+
+\keywords{sentiment analysis, financial NLP, PMI, transformers}
+
+\maketitle
+
+\section{Introduction}
+
+\section{Dataset and Exploratory Analysis}
+
+\section{Text Preprocessing}
+
+\section{Classical Sentiment Classification}
+
+\section{PMI-based Word Similarity}
+
+\section{Transformer Fine-tuning}
+
+\section{Discussion and Conclusion}
+
+\begin{figure}[h]
+  \centering
+  % \includegraphics[width=\linewidth]{../figures/label_distribution.png}
+  \caption{Example figure.}
+  \Description{Example figure description.}
+\end{figure}
+
+\begin{table}[h]
+  \caption{Model comparison results.}
+  \label{tab:results}
+  \begin{tabular}{lccc}
+    \toprule
+    Model & Setting & Accuracy & Macro F1 \\
+    \midrule
+    Naive Bayes (TF-IDF) & Multiclass & -- & -- \\
+    Feed-forward NN & Multiclass & -- & -- \\
+    DistilBERT & Multiclass & -- & -- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
