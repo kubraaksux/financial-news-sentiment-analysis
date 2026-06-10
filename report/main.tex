@@ -42,7 +42,53 @@ word similarity, and fine-tuned transformers on Financial PhraseBank
 
 \section{Text Preprocessing}
 
+We applied a shared pipeline in \texttt{src/preprocess.py}: lowercasing,
+whitespace normalization, NLTK \texttt{word\_tokenize}, removal of pure
+punctuation tokens, and English stopword filtering.
+Numeric tokens (e.g., percentages and currency amounts) were kept because they
+are informative in financial headlines.
+Table~\ref{tab:preprocessing} compares three variants on the training set;
+stopword removal shortened documents from 20.4 to 13.4 tokens on average while
+barely reducing vocabulary size.
+Example: \emph{``The major breweries increased their domestic beer sales by 4.5
+per cent last year.''} $\rightarrow$ \emph{``major breweries increased domestic
+beer sales 4.5 per cent last year''}.
+
+\begin{table}[h]
+  \caption{Preprocessing variant comparison (training set, $n=3876$).}
+  \label{tab:preprocessing}
+  \begin{tabular}{lcc}
+    \toprule
+    Variant & Avg tokens/doc & Vocab size \\
+    \midrule
+    Lowercase + whitespace & 23.0 & 10{,}314 \\
+    Tokenized (keep stopwords) & 20.4 & 10{,}265 \\
+    Tokenized + stopword removal & 13.4 & 10{,}144 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \section{Classical Sentiment Classification}
+
+We trained Multinomial Naive Bayes and a feed-forward neural network
+(\texttt{MLPClassifier}, two hidden layers of 128 and 64 units) on bag-of-words
+and TF-IDF features built from the Task~2 preprocessing pipeline.
+For TF-IDF with Naive Bayes, down-weighting frequent tokens hurt minority-class
+detection: the model collapsed toward \emph{neutral}, with negative recall
+$\approx$0.01 in the multiclass setting.
+BoW features worked better for NB; the best multiclass macro F1 was
+0.67 (feed-forward NN + BoW), and the best binary macro F1 was 0.80 (NB + BoW).
+
+Error analysis revealed recurring failure modes.
+Subtle positive statements without explicit sentiment words were often predicted
+as \emph{neutral} or \emph{negative}, e.g.,
+\emph{``diesel margin remained high''} (true: positive).
+Factual headlines reporting legal or financial outcomes were also misread, e.g.,
+\emph{``paper maker stora enso oyj said friday acquitted charges \ldots''}
+(true: positive, predicted: negative).
+Headlines dominated by numbers could flip neutral/negative labels, e.g.,
+\emph{``non-recurring items eur 177mn profit amounted eur 20mn''}
+(true: neutral, predicted: negative).
 
 \section{PMI-based Word Similarity}
 
@@ -58,15 +104,21 @@ word similarity, and fine-tuned transformers on Financial PhraseBank
 \end{figure}
 
 \begin{table}[h]
-  \caption{Model comparison results.}
+  \caption{Task~3 classical model results (test set).}
   \label{tab:results}
-  \begin{tabular}{lccc}
+  \begin{tabular}{lllcc}
     \toprule
-    Model & Setting & Accuracy & Macro F1 \\
+    Model & Features & Setting & Accuracy & Macro F1 \\
     \midrule
-    Naive Bayes (TF-IDF) & Multiclass & -- & -- \\
-    Feed-forward NN & Multiclass & -- & -- \\
-    DistilBERT & Multiclass & -- & -- \\
+    Naive Bayes & BoW & Multiclass & 0.71 & 0.63 \\
+    Naive Bayes & TF-IDF & Multiclass & 0.68 & 0.42 \\
+    Feed-forward NN & BoW & Multiclass & 0.73 & 0.67 \\
+    Feed-forward NN & TF-IDF & Multiclass & 0.73 & 0.65 \\
+    Naive Bayes & BoW & Binary & 0.83 & 0.80 \\
+    Naive Bayes & TF-IDF & Binary & 0.74 & 0.56 \\
+    Feed-forward NN & BoW & Binary & 0.82 & 0.78 \\
+    Feed-forward NN & TF-IDF & Binary & 0.82 & 0.77 \\
+    DistilBERT & -- & Multiclass & -- & -- \\
     \bottomrule
   \end{tabular}
 \end{table}
