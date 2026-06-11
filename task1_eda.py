@@ -76,7 +76,8 @@ def explore_vocabulary(df: pd.DataFrame) -> None:
     """Inspect frequent words/n-grams and optional word cloud."""
     #raise NotImplementedError("Implement vocabulary and n-gram analysis")
 
-    # vocabulary analysis using top unigram per class
+    # N_gram
+    # top unigram per class
     fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharey=False)
     for ax, label in zip(axes, ['positive', 'negative', 'neutral']):
         subset = df[df['label'] == label]['text'].tolist()
@@ -112,8 +113,6 @@ def explore_vocabulary(df: pd.DataFrame) -> None:
     plt.savefig(FIGURES_DIR / 'top_bigrams.png', bbox_inches='tight')
     plt.show()
 
-
-    # n-gram
     # cleaning the text data before using it 
     # to generate word cloud
     # remove punction first
