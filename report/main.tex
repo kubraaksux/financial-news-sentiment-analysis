@@ -94,6 +94,22 @@ Headlines dominated by numbers could flip neutral/negative labels, e.g.,
 
 \section{Transformer Fine-tuning}
 
+We fine-tuned \texttt{distilbert-base-uncased} on the same train/test split as
+Task~3, using \textbf{raw headlines} (not the Task~2 preprocessing pipeline).
+DistilBERT provides its own subword tokenizer; lowercasing and stopword removal
+are handled internally.
+Training used learning rate $2\times10^{-5}$, batch size 16, three epochs,
+weight decay 0.01, and max sequence length 128.
+Checkpoints were selected by validation macro F1.
+Fine-tuning ran locally on Apple Silicon in about 3.5 minutes (multiclass) and
+1.4 minutes (binary); no NVIDIA GPU was used.
+
+DistilBERT outperformed all classical models in Table~\ref{tab:results},
+especially on minority classes: multiclass negative recall improved from
+0.53--0.59 (MLP) to 0.90.
+Remaining errors include subtle positives predicted as neutral and factual
+headlines with mixed signals (e.g., acquittal or flat profit reports).
+
 \section{Discussion and Conclusion}
 
 \begin{figure}[h]
@@ -104,7 +120,7 @@ Headlines dominated by numbers could flip neutral/negative labels, e.g.,
 \end{figure}
 
 \begin{table}[h]
-  \caption{Task~3 classical model results (test set).}
+  \caption{Model results on the test set.}
   \label{tab:results}
   \begin{tabular}{lllcc}
     \toprule
@@ -118,7 +134,8 @@ Headlines dominated by numbers could flip neutral/negative labels, e.g.,
     Naive Bayes & TF-IDF & Binary & 0.74 & 0.56 \\
     Feed-forward NN & BoW & Binary & 0.82 & 0.78 \\
     Feed-forward NN & TF-IDF & Binary & 0.82 & 0.77 \\
-    DistilBERT & -- & Multiclass & -- & -- \\
+    DistilBERT & raw text & Multiclass & 0.84 & 0.82 \\
+    DistilBERT & raw text & Binary & 0.96 & 0.95 \\
     \bottomrule
   \end{tabular}
 \end{table}
