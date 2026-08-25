@@ -1,41 +1,60 @@
-# NLP Project 1.2 — Sentiment Analysis of Financial News
+# Financial News Sentiment Analysis
 
-TU Berlin · Natural Language Processing · SoSe 2026
+A reproducible comparison of classical machine-learning and transformer approaches for classifying financial-news headlines as **negative**, **neutral**, or **positive**.
 
-**Deadline:** 16 June 2026, 23:55 (GMT+2)
+## Problem
 
-Sentiment classification on financial news headlines from Financial PhraseBank
-(`data/Sentences_50Agree.txt`, format `sentence text@label`).
+Financial sentiment is difficult because many headlines express consequences indirectly: legal outcomes, margin changes, percentages, and apparently factual statements can carry sentiment without explicit polarity words. This project studies how feature representations and model families affect performance on those cases.
 
-## Task split
+## Methods compared
 
-| Task | Owner | Script |
-|------|-------|--------|
-| 1 — EDA | Ray | `task1_eda.py` |
-| 2 — Preprocessing | Kübra | `task2_preprocess.py`, `src/preprocess.py` |
-| 3 — NB + NN | Kübra | `task3_classification.py` |
-| 4 — PMI | Ray | `task4_pmi.py` |
-| 5 — Transformers | Kübra | `task5_transformers.py` |
+- Multinomial Naive Bayes with bag-of-words and TF-IDF
+- Feed-forward neural network (MLP) with bag-of-words and TF-IDF
+- Fine-tuned `distilbert-base-uncased`
+- PMI-based word-similarity analysis
+- Multiclass and binary evaluation settings
 
-Shared data loading/splitting: `src/data_utils.py`
+## Dataset and methodology
 
-## Setup
+The experiments use the **Financial PhraseBank** `Sentences_50Agree` subset. Data is split once using a stratified 80/20 train/test split with seed 42 and stored in `data/split.json` for reproducibility.
+
+The classical pipeline lowercases and tokenizes headlines, removes punctuation-only tokens and English stopwords, and retains numeric tokens because financial quantities are informative. DistilBERT receives raw headlines and uses its native subword tokenizer.
+
+Reported metrics are test accuracy and macro F1. Transformer checkpoints are selected using validation macro F1.
+
+## Results
+
+| Model | Features | Setting | Accuracy | Macro F1 |
+|---|---|---:|---:|---:|
+| Naive Bayes | BoW | Multiclass | 0.71 | 0.63 |
+| Naive Bayes | TF-IDF | Multiclass | 0.68 | 0.42 |
+| MLP | BoW | Multiclass | 0.73 | 0.67 |
+| MLP | TF-IDF | Multiclass | 0.73 | 0.65 |
+| Naive Bayes | BoW | Binary | 0.83 | 0.80 |
+| MLP | BoW | Binary | 0.82 | 0.78 |
+| DistilBERT | Raw text | Multiclass | **0.84** | **0.82** |
+| DistilBERT | Raw text | Binary | **0.96** | **0.95** |
+
+DistilBERT produced the strongest results and raised multiclass negative recall to 0.90, compared with approximately 0.53–0.59 for the MLP variants.
+
+## Error analysis
+
+Recurring errors include:
+
+- Subtle positive statements being classified as neutral or negative
+- Legal or financial outcomes being misread when their sentiment is implicit
+- Headlines with mixed numeric signals confusing neutral and negative labels
+- TF-IDF Naive Bayes collapsing toward the majority neutral class, with very low negative recall
+
+These failures show why macro F1 and class-level recall are more informative than accuracy alone for this imbalanced task.
+
+## Reproduction
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-NLTK resources (if needed for preprocessing):
-
-```bash
-python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet')"
-```
-
-Train/test split: stratified 80/20, seed 42, saved to `data/split.json`.
-
-```bash
 python -m src.data_utils
 python task1_eda.py
 python task2_preprocess.py
@@ -44,26 +63,17 @@ python task4_pmi.py
 python task5_transformers.py
 ```
 
-Figures → `figures/`, model checkpoints → `models/`.
+Generated figures are written to `figures/`; model checkpoints are written to `models/`. The ACM-style technical report is in `report/main.tex`.
 
-## Layout
+## Individual contribution
 
-```
-nlp_project_1_2/
-├── data/
-├── src/
-│   ├── data_utils.py
-│   └── preprocess.py
-├── task1_eda.py … task5_transformers.py
-├── figures/
-├── report/main.tex
-├── ExperimentSummarySheet_Ex1.xlsx
-└── requirements.txt
-```
+This was a collaborative TU Berlin NLP project. My work focused on:
 
-## Submission
+- Text preprocessing and reproducible data handling
+- Classical sentiment classification and evaluation
+- DistilBERT fine-tuning
+- Shared evaluation utilities and experiment logging
+- Quantitative comparison and error analysis
+- Correcting and stabilizing the PMI scoring implementation
 
-- Source code
-- Report PDF (ACM template in `report/`, max 4 pages)
-- Completed `ExperimentSummarySheet_Ex1.xlsx`
-- Zip: `NLP_project_1_2_[GroupName].zip`
+The commit history preserves the collaborative development record.
